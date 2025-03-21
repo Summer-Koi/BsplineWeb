@@ -15,10 +15,15 @@ const controlPoints = defineModel<ControlPoint[]>('controlPoints')
 
 const splinePieces = ref<SplinePiece[]>([])
 
+const basisFunctionCache = new Map<string, number>()
+const clearBasisCache = () => {
+  basisFunctionCache.clear()
+}
+
 const updateSplinePieces = () => {
-  if (!knots.value) return
+  if (knots.value === undefined) return
   if (degree.value === undefined) return
-  if (!controlPoints.value) return
+  if (controlPoints.value === undefined) return
   splinePieces.value = []
 
   //TODO: 自适应 mini piece size
@@ -29,7 +34,13 @@ const updateSplinePieces = () => {
     let t_step = (t_end - t_start) / 20
     let points: Point[] = []
     for (let t = t_start; t < t_end + t_step / 2; t += t_step) {
-      const point = calculateBSplinePoint(controlPoints.value, degree.value, knots.value, t)
+      const point = calculateBSplinePoint(
+        controlPoints.value,
+        degree.value,
+        knots.value,
+        t,
+        basisFunctionCache,
+      )
       points.push(point)
     }
     splinePieces.value.push(new SplinePiece(points))
@@ -37,9 +48,11 @@ const updateSplinePieces = () => {
 }
 
 onMounted(() => {
+  clearBasisCache()
   updateSplinePieces()
 })
 watch([degree, knots, controlPoints], () => {
+  clearBasisCache()
   updateSplinePieces()
 })
 

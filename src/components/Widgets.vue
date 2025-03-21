@@ -53,5 +53,8 @@ const exportBSpline = () => {
       10, "y": 50 }, { "x": 100, "y": 100 }, { "x": 200, "y": 200 }, { "x": 300, "y": 100 }, { "x":
       400, "y": 200 }, { "x": 400, "y": 400 } ] }
     </div>
+    <div>{{ controlPoints }}</div>
+    <div>{{ degree }}</div>
+    <div>{{ knots }}</div>
   </div>
 </template>
