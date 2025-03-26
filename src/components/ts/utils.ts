@@ -40,19 +40,6 @@ function basisFunction(
   return result
 }
 
-/* function basisFunction(i: number, k: number, t: number, knots: number[]): number {
-  if (k === 0) {
-    return knots[i] <= t && t < knots[i + 1] ? 1 : 0
-  } else {
-    const denom1 = knots[i + k] - knots[i]
-    const denom2 = knots[i + k + 1] - knots[i + 1]
-    const term1 = denom1 === 0 ? 0 : ((t - knots[i]) / denom1) * basisFunction(i, k - 1, t, knots)
-    const term2 =
-      denom2 === 0 ? 0 : ((knots[i + k + 1] - t) / denom2) * basisFunction(i + 1, k - 1, t, knots)
-    return term1 + term2
-  }
-} */
-
 /**
  * Calculate the B-spline curve point at parameter t
  * @param controlPoints - The control points of the B-spline
@@ -81,4 +68,31 @@ function calculateBSplinePoint(
   return point
 }
 
-export { calculateBSplinePoint }
+function insertKnot(
+  controlPoints: { x: number; y: number }[],
+  degree: number,
+  knots: number[],
+  new_knot: number,
+) {
+  let n = controlPoints.length - 1
+  let newControlPoints = Array.from(controlPoints)
+  let i = 0
+  while (knots[i] < new_knot) {
+    i++
+  }
+
+  for (let j = 0; j <= degree - 1; j++) {
+    let idx = i - degree + j
+    let alpha = (new_knot - knots[idx]) / (knots[idx + degree] - knots[idx])
+    newControlPoints[idx] = {
+      x: controlPoints[idx].x * alpha + controlPoints[idx - 1].x * (1 - alpha),
+      y: controlPoints[idx].y * alpha + controlPoints[idx - 1].y * (1 - alpha),
+    }
+  }
+  newControlPoints.splice(i, 0, controlPoints[i - 1])
+  let newKnots = Array.from(knots)
+  newKnots.splice(i, 0, new_knot)
+  return { newControlPoints, newKnots }
+}
+
+export { calculateBSplinePoint, insertKnot }

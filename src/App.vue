@@ -1,21 +1,28 @@
 <script setup lang="ts">
 import Canvas from './components/Canvas.vue'
+import Knots from './components/Knots.vue'
 import Widgets from './components/Widgets.vue'
-import { ref } from 'vue'
-import { ControlPoint } from './components/defines'
+import { onMounted, ref } from 'vue'
+import { ControlPoint } from './components/ts/defines'
 import { ElMessage } from 'element-plus'
 
 const degree = ref(0)
-const knots = ref([])
+const knots = ref<number[]>([])
 const controlPoints = ref<ControlPoint[]>([])
 const importText = ref('')
-
-
 </script>
 
 <template>
-  <Canvas v-model:degree="degree" v-model:knots="knots" v-model:control-points="controlPoints" />
-  <Widgets v-model:import-text="importText" v-model:degree="degree" v-model:knots="knots" v-model:control-points="controlPoints" />
+  <div class="left-container">
+    <Canvas v-model:degree="degree" v-model:knots="knots" v-model:control-points="controlPoints" />
+    <Knots v-model:degree="degree" v-model:knots="knots" v-model:control-points="controlPoints" />
+  </div>
+  <Widgets
+    v-model:import-text="importText"
+    v-model:degree="degree"
+    v-model:knots="knots"
+    v-model:control-points="controlPoints"
+  />
 </template>
 
 <style>

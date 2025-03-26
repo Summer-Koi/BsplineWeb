@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { ControlPoint, SplinePiece, Point } from './defines'
-import { calculateBSplinePoint } from './utils'
+import { ControlPoint, SplinePiece, Point } from './ts/defines'
+import { calculateBSplinePoint } from './ts/utils'
 import type { Circle } from 'konva/lib/shapes/Circle'
 
 const stageConfig = {
@@ -51,10 +51,14 @@ onMounted(() => {
   clearBasisCache()
   updateSplinePieces()
 })
-watch([degree, knots, controlPoints], () => {
-  clearBasisCache()
-  updateSplinePieces()
-})
+watch(
+  [degree, knots, controlPoints],
+  () => {
+    clearBasisCache()
+    updateSplinePieces()
+  },
+  { deep: true },
+)
 
 const onCPointDragStart = () => {}
 const onCPointDragMove = (e: any) => {
