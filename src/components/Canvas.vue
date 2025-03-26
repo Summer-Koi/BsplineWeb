@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { ControlPoint, SplinePiece, Point } from './ts/defines'
+import { ControlPoint, SplinePiece, Point, ControlPointLine } from './ts/defines'
 import { calculateBSplinePoint } from './ts/utils'
 import type { Circle } from 'konva/lib/shapes/Circle'
 
@@ -14,6 +14,7 @@ const degree = defineModel<number>('degree')
 const controlPoints = defineModel<ControlPoint[]>('controlPoints')
 
 const splinePieces = ref<SplinePiece[]>([])
+const controlPointLine = ref<ControlPointLine>()
 
 const basisFunctionCache = new Map<string, number>()
 const clearBasisCache = () => {
@@ -31,10 +32,12 @@ const updateSplinePieces = () => {
   for (let i = degree.value; i < controlPoints.value.length; i++) {
     let t_start = knots.value[i]
     let t_end = knots.value[i + 1]
+    let num_pieces = 20
     let t_step = (t_end - t_start) / 20
     let points: Point[] = []
-    for (let t = t_start; t < t_end + t_step / 2; t += t_step) {
-      const point = calculateBSplinePoint(
+    for (let j = 0; j <= num_pieces; j++) {
+      let t = t_start + j * t_step
+      let point = calculateBSplinePoint(
         controlPoints.value,
         degree.value,
         knots.value,
@@ -47,15 +50,22 @@ const updateSplinePieces = () => {
   }
 }
 
+const updateControlPointLine = () => {
+  if (controlPoints.value === undefined) return
+  controlPointLine.value = new ControlPointLine(controlPoints.value)
+}
+
 onMounted(() => {
   clearBasisCache()
   updateSplinePieces()
+  updateControlPointLine()
 })
 watch(
   [degree, knots, controlPoints],
   () => {
     clearBasisCache()
     updateSplinePieces()
+    updateControlPointLine()
   },
   { deep: true },
 )
@@ -82,6 +92,7 @@ const onCPointDragEnd = () => {}
   <div class="main-canvas">
     <v-stage :config="stageConfig">
       <v-layer>
+        <v-line v-if="controlPointLine" :config="controlPointLine.config" />
         <v-line v-for="splinePiece in splinePieces" :config="splinePiece.config" />
         <v-circle
           v-for="controlPoint in controlPoints"

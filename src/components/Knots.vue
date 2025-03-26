@@ -19,7 +19,6 @@ watch(
   (newKnots) => {
     if (newKnots !== undefined) {
       knotsVector.value.setKnots(newKnots)
-      console.log('update')
     }
   },
   { deep: true },

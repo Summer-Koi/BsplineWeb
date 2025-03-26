@@ -28,9 +28,9 @@ function basisFunction(
     const denom1 = knots[i + k] - knots[i]
     const denom2 = knots[i + k + 1] - knots[i + 1]
     const term1 =
-      denom1 === 0 ? 0 : ((t - knots[i]) / denom1) * basisFunction(i, k - 1, t, knots, memo)
+      denom1 < 1e-10 ? 0 : ((t - knots[i]) / denom1) * basisFunction(i, k - 1, t, knots, memo)
     const term2 =
-      denom2 === 0
+      denom2 < 1e-10
         ? 0
         : ((knots[i + k + 1] - t) / denom2) * basisFunction(i + 1, k - 1, t, knots, memo)
     result = term1 + term2
@@ -58,6 +58,13 @@ function calculateBSplinePoint(
 ): { x: number; y: number } {
   const n = controlPoints.length - 1
   let point = { x: 0, y: 0 }
+
+  if (t < knots[degree]) {
+    return controlPoints[0]
+  }
+  if (t >= knots[n + 1]) {
+    return controlPoints[n]
+  }
 
   for (let i = 0; i <= n; i++) {
     const basis = basisFunction(i, degree, t, knots, memo)

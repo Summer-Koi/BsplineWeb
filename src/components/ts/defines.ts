@@ -27,7 +27,7 @@ class ControlPoint extends Point {
   }
 }
 
-class SplinePiece {
+class Line {
   points: number[] = []
   constructor(points: Point[]) {
     for (let point of points) {
@@ -35,14 +35,33 @@ class SplinePiece {
       this.points.push(point.y)
     }
   }
+}
 
+class SplinePiece extends Line {
+  constructor(points: Point[]) {
+    super(points)
+  }
   get config() {
     return {
       points: this.points,
       stroke: 'black',
-      strokeWidth: 1,
+      strokeWidth: 1.5,
     }
   }
 }
 
-export { ControlPoint, SplinePiece, Point }
+class ControlPointLine extends Line {
+  constructor(points: Point[]) {
+    super(points)
+  }
+  get config() {
+    return {
+      points: this.points,
+      stroke: 'green',
+      strokeWidth: 1,
+      dash: [3, 5]
+    }
+  }
+}
+
+export { ControlPoint, SplinePiece, Point, ControlPointLine }
