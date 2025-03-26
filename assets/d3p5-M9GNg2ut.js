@@ -1,0 +1,1 @@
+const e=3,o=[0,0,0,0,1,2,2,2,2],t=[{x:170,y:515},{x:96,y:295},{x:177,y:151},{x:327,y:132},{x:519,y:252}],n={degree:3,knots:o,controlPoints:t};export{t as controlPoints,n as default,e as degree,o as knots};
