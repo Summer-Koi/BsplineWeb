@@ -102,4 +102,35 @@ function insertKnot(
   return { newControlPoints, newKnots }
 }
 
-export { calculateBSplinePoint, insertKnot }
+/**
+ * Generate a uniform knot vector suitable for a B-spline
+ * @param numPoints - Number of control points
+ * @param degree - Degree of the B-spline
+ * @returns A suitable uniform knot vector
+ */
+function generateUniformKnotVector(numPoints: number, degree: number): number[] {
+  let knotCount = numPoints + degree + 1
+  let knots = []
+
+  // Add degree+1 knots at the start with value 0
+  for (let i = 0; i <= degree; i++) {
+    knots.push(0)
+  }
+
+  // Add internal knots with uniform spacing
+  let internalKnotCount = knotCount - 2 * (degree + 1)
+  if (internalKnotCount > 0) {
+    for (let i = 1; i <= internalKnotCount; i++) {
+      knots.push(i / (internalKnotCount + 1))
+    }
+  }
+
+  // Add degree+1 knots at the end with value 1
+  for (let i = 0; i <= degree; i++) {
+    knots.push(1)
+  }
+
+  return knots
+}
+
+export { calculateBSplinePoint, insertKnot, generateUniformKnotVector }

@@ -10,18 +10,28 @@ const degree = ref(0)
 const knots = ref<number[]>([])
 const controlPoints = ref<ControlPoint[]>([])
 const importText = ref('')
+
+const createMode = ref(false)
+const newCurveDegree = ref(3)
 </script>
 
 <template>
-  <div class="left-container">
-    <Canvas v-model:degree="degree" v-model:knots="knots" v-model:control-points="controlPoints" />
-    <Knots v-model:degree="degree" v-model:knots="knots" v-model:control-points="controlPoints" />
+  <div>
+    <Canvas
+      v-model:degree="degree"
+      v-model:knots="knots"
+      v-model:control-points="controlPoints"
+      v-model:create-mode="createMode"
+      v-model:new-curve-degree="newCurveDegree"
+    />
   </div>
   <Widgets
     v-model:import-text="importText"
     v-model:degree="degree"
     v-model:knots="knots"
     v-model:control-points="controlPoints"
+    v-model:create-mode="createMode"
+    v-model:new-curve-degree="newCurveDegree"
   />
 </template>
 
@@ -33,11 +43,5 @@ body {
 #app {
   display: flex;
   padding: 0 2rem;
-}
-
-.widget-container {
-  display: flex;
-  width: 300px;
-  flex-direction: column;
 }
 </style>

@@ -9,6 +9,8 @@ const degree = defineModel<number>('degree')
 const controlPoints = defineModel<ControlPoint[]>('controlPoints')
 
 const knotInput = ref('')
+const createMode = defineModel<boolean>('createMode')
+const newCurveDegree = defineModel<number>('newCurveDegree')
 
 const importBSpline = (jsondata: any) => {
   try {
@@ -109,6 +111,17 @@ const onInsertKnotClick = () => {
   knots.value = []
   knots.value = newKnots
 }
+
+const startCreatingBSpline = () => {
+  if (createMode.value) return
+  createMode.value = true
+  ElMessage.info('点击画布添加控制点，点击"完成"结束创建')
+}
+
+const finishCreatingBSpline = () => {
+  createMode.value = false
+  ElMessage.success('B样条创建完成')
+}
 </script>
 
 <template>
@@ -121,18 +134,35 @@ const onInsertKnotClick = () => {
       <el-button @click="onImportExampleClick(2, 6)">2阶-6点</el-button>
       <el-button @click="onImportExampleClick(3, 5)">3阶-5点</el-button>
       <el-button @click="onImportExampleClick(3, 7)">3阶-7点</el-button>
-      <div class="mt-10"/>
+      <div class="mt-10" />
       <el-button type="primary" @click="exportBSpline">导出</el-button>
     </div>
-    <div class="widget-box" style="border-color:coral">
+    <div class="widget-box" style="border-color: coral">
       <h3 style="font-weight: bold">插节点</h3>
       <span>节点向量：{{ knots }}</span>
       <br />
       <span>手动插入：</span>
-      <el-input v-model="knotInput" style="width: 150px; margin-right: 10px;" placeholder="Please input" />
+      <el-input
+        v-model="knotInput"
+        style="width: 150px; margin-right: 10px"
+        placeholder="Please input"
+      />
       <el-button @click="onInsertKnotClick">插入节点</el-button>
-    </div>  
-    <div>
+    </div>
+    <div class="widget-box" style="border-color: mediumseagreen">
+      <h3 style="font-weight: bold">创建新B样条</h3>
+      <div>
+        <span>设置阶数: </span>
+        <el-input-number v-model="newCurveDegree" :min="1" :max="5" :disabled="createMode" />
+      </div>
+      <div class="mt-10">
+        <el-button type="primary" @click="startCreatingBSpline" :disabled="createMode">
+          开始创建
+        </el-button>
+        <el-button type="success" @click="finishCreatingBSpline" :disabled="!createMode">
+          完成
+        </el-button>
+      </div>
     </div>
   </div>
 </template>
