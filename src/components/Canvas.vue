@@ -171,14 +171,30 @@ watch(
         const firstKnotCount = manualKnots.value.filter((knot) => knot === firstKnot).length
         const lastKnotCount = manualKnots.value.filter((knot) => knot === lastKnot).length
 
-        if (firstKnotCount !== finalDegree + 1) {
+        // 中间的重节点最多不能重复 degree 次
+        const middleKnots = manualKnots.value.slice(
+          firstKnotCount,
+          manualKnots.value.length - lastKnotCount,
+        )
+        const middleKnotCounts = middleKnots.reduce((acc: Record<number, number>, knot) => {
+          acc[knot] = (acc[knot] || 0) + 1
+          return acc
+        }, {})
+        const maxMiddleKnotCount = Math.max(...Object.values(middleKnotCounts))
+
+        if (maxMiddleKnotCount > finalDegree) {
           ElMessage.warning(
-            `节点向量前端应有 ${finalDegree + 1} 个相同的值，但实际为 ${firstKnotCount}。使用默认节点向量。`,
+            `节点向量中间的重节点最多不能重复 ${finalDegree} 次，但实际为 ${maxMiddleKnotCount}。使用默认节点向量。`,
           )
           newKnots = createUniformKnotVector(tempControlPoints.value.length, finalDegree)
-        } else if (lastKnotCount !== finalDegree + 1) {
+        } else if (firstKnotCount !== newDegree + 1) {
           ElMessage.warning(
-            `节点向量后端应有 ${finalDegree + 1} 个相同的值，但实际为 ${lastKnotCount}。使用默认节点向量。`,
+            `节点向量前端应有 ${newDegree + 1} 个相同的值，但实际为 ${firstKnotCount}。使用默认节点向量。`,
+          )
+          newKnots = createUniformKnotVector(tempControlPoints.value.length, finalDegree)
+        } else if (lastKnotCount !== newDegree + 1) {
+          ElMessage.warning(
+            `节点向量后端应有 ${newDegree + 1} 个相同的值，但实际为 ${lastKnotCount}。使用默认节点向量。`,
           )
           newKnots = createUniformKnotVector(tempControlPoints.value.length, finalDegree)
         } else if (manualKnots.value.length !== requiredLength) {
