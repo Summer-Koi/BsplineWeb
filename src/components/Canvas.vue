@@ -3,6 +3,7 @@ import { ref, onMounted, watch, nextTick } from 'vue'
 import { ControlPoint, SplinePiece, Point, ControlPointLine } from './ts/defines'
 import { calculateBSplinePoint, generateUniformKnotVector } from './ts/utils'
 import type { Circle } from 'konva/lib/shapes/Circle'
+import { ElMessage } from 'element-plus'
 
 const stageConfig = {
   width: 600,
@@ -120,6 +121,10 @@ const createUniformKnotVector = (numPoints: number, degree: number) => {
   return knots
 }
 
+// 添加接收手动节点向量的属性
+const useManualKnots = defineModel<boolean>('useManualKnots')
+const manualKnots = defineModel<number[]>('manualKnots')
+
 // Handle stage click for adding control points in create mode
 const onStageClick = (e: any) => {
   if (!createMode.value) return
@@ -151,9 +156,44 @@ watch(
 
       // Make sure degree is valid based on number of points
       const finalDegree = Math.min(newDegree, tempControlPoints.value.length - 1)
+      // const finalDegree = newDegree
 
-      // Generate knot vector
-      const newKnots = createUniformKnotVector(tempControlPoints.value.length, finalDegree)
+      // 决定是否使用手动节点向量
+      let newKnots: number[]
+
+      if (useManualKnots.value && manualKnots.value && manualKnots.value.length > 0) {
+        // 检查手动节点向量是否符合要求
+        const requiredLength = tempControlPoints.value.length + finalDegree + 1
+
+        // 检查节点向量前后是否有 degree + 1 个相同的值
+        const firstKnot = manualKnots.value[0]
+        const lastKnot = manualKnots.value[manualKnots.value.length - 1]
+        const firstKnotCount = manualKnots.value.filter((knot) => knot === firstKnot).length
+        const lastKnotCount = manualKnots.value.filter((knot) => knot === lastKnot).length
+
+        if (firstKnotCount !== finalDegree + 1) {
+          ElMessage.warning(
+            `节点向量前端应有 ${finalDegree + 1} 个相同的值，但实际为 ${firstKnotCount}。使用默认节点向量。`,
+          )
+          newKnots = createUniformKnotVector(tempControlPoints.value.length, finalDegree)
+        } else if (lastKnotCount !== finalDegree + 1) {
+          ElMessage.warning(
+            `节点向量后端应有 ${finalDegree + 1} 个相同的值，但实际为 ${lastKnotCount}。使用默认节点向量。`,
+          )
+          newKnots = createUniformKnotVector(tempControlPoints.value.length, finalDegree)
+        } else if (manualKnots.value.length !== requiredLength) {
+          ElMessage.warning(
+            `节点向量长度应为 ${requiredLength}（控制点数 ${tempControlPoints.value.length} + 阶数 ${finalDegree} + 1），` +
+              `但实际为 ${manualKnots.value.length}。使用默认节点向量。`,
+          )
+          newKnots = createUniformKnotVector(tempControlPoints.value.length, finalDegree)
+        } else {
+          newKnots = manualKnots.value
+        }
+      } else {
+        // Generate a uniform knot vector based on the number of control points and degree
+        newKnots = createUniformKnotVector(tempControlPoints.value.length, finalDegree)
+      }
 
       // Update the data models
       degree.value = finalDegree
@@ -163,6 +203,8 @@ watch(
       // Clear temp data
       tempControlPoints.value = []
       tempControlPointLine.value = undefined
+      manualKnots.value = []
+      useManualKnots.value = false
     }
   },
 )

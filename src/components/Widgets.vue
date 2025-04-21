@@ -12,6 +12,45 @@ const knotInput = ref('')
 const createMode = defineModel<boolean>('createMode')
 const newCurveDegree = defineModel<number>('newCurveDegree')
 
+// 添加节点向量手动输入
+const manualKnotsInput = ref('')
+const useManualKnots = ref(false)
+
+// 解析手动输入的节点向量
+const parseManualKnots = () => {
+  try {
+    if (!manualKnotsInput.value.trim()) {
+      return null
+    }
+
+    // 处理可能的不同输入格式（逗号、空格分隔等）
+    const knotValues = manualKnotsInput.value
+      .replace(/[,;，；]/g, ' ')
+      .split(/\s+/)
+      .filter((k) => k.trim())
+      .map((k) => parseFloat(k))
+
+    // 验证所有输入都是有效数字
+    if (knotValues.some(isNaN)) {
+      ElMessage.warning('节点向量包含无效数值')
+      return null
+    }
+
+    // 验证节点向量是非递减的
+    for (let i = 1; i < knotValues.length; i++) {
+      if (knotValues[i] < knotValues[i - 1]) {
+        ElMessage.warning('节点向量必须是非递减序列')
+        return null
+      }
+    }
+
+    return knotValues
+  } catch (e) {
+    ElMessage.error('节点向量解析失败')
+    return null
+  }
+}
+
 const importBSpline = (jsondata: any) => {
   try {
     degree.value = jsondata.degree
@@ -118,9 +157,24 @@ const startCreatingBSpline = () => {
   ElMessage.info('点击画布添加控制点，点击"完成"结束创建')
 }
 
+const emits = defineEmits(['manual-knots-input'])
+
 const finishCreatingBSpline = () => {
-  createMode.value = false
+  // 解析并检查手动节点向量
+  const knotValues = useManualKnots.value ? parseManualKnots() : null
+
+  // 发送节点向量到父组件
+  emits('manual-knots-input', knotValues)
+
+  // 退出创建模式
+  
   ElMessage.success('B样条创建完成')
+}
+
+const cancelCreatingBSpline = () => {
+  createMode.value = false
+  ElMessage.info('已取消创建')
+  useManualKnots.value = false
 }
 </script>
 
@@ -155,6 +209,24 @@ const finishCreatingBSpline = () => {
         <span>设置阶数: </span>
         <el-input-number v-model="newCurveDegree" :min="1" :max="5" :disabled="createMode" />
       </div>
+
+      <!-- 添加节点向量输入区域 -->
+      <div class="mt-10">
+        <el-checkbox v-model="useManualKnots" :disabled="createMode">手动设置节点向量</el-checkbox>
+        <div v-if="useManualKnots" class="mt-10">
+          <el-input
+            v-model="manualKnotsInput"
+            :disabled="createMode"
+            type="textarea"
+            :rows="2"
+            placeholder="输入节点向量（如: 0 0 0 0.3 0.7 1 1 1）"
+          />
+          <div class="mt-10" style="font-size: 12px; color: #666">
+            提示：节点值需要从小到大排序，用空格或逗号分隔
+          </div>
+        </div>
+      </div>
+
       <div class="mt-10">
         <el-button type="primary" @click="startCreatingBSpline" :disabled="createMode">
           开始创建
@@ -162,6 +234,7 @@ const finishCreatingBSpline = () => {
         <el-button type="success" @click="finishCreatingBSpline" :disabled="!createMode">
           完成
         </el-button>
+        <el-button @click="cancelCreatingBSpline" :disabled="!createMode"> 取消 </el-button>
       </div>
     </div>
   </div>
