@@ -16,6 +16,9 @@ const newCurveDegree = defineModel<number>('newCurveDegree')
 const manualKnotsInput = ref('')
 const useManualKnots = ref(false)
 
+// 添加导入文本输入
+const importTextInput = ref('')
+
 // 解析手动输入的节点向量
 const parseManualKnots = () => {
   try {
@@ -167,7 +170,7 @@ const finishCreatingBSpline = () => {
   emits('manual-knots-input', knotValues)
 
   // 退出创建模式
-  
+
   ElMessage.success('B样条创建完成')
 }
 
@@ -175,6 +178,21 @@ const cancelCreatingBSpline = () => {
   createMode.value = false
   ElMessage.info('已取消创建')
   useManualKnots.value = false
+}
+
+const importBSplineFromText = () => {
+  if (!importTextInput.value.trim()) {
+    ElMessage.warning('请输入有效的B样条数据')
+    return
+  }
+
+  try {
+    const jsonData = JSON.parse(importTextInput.value)
+    importBSpline(jsonData)
+    importTextInput.value = '' // 导入成功后清空输入框
+  } catch (e) {
+    ElMessage.error('解析导入数据失败，请确保格式正确')
+  }
 }
 </script>
 
@@ -188,8 +206,22 @@ const cancelCreatingBSpline = () => {
       <el-button @click="onImportExampleClick(2, 6)">2阶-6点</el-button>
       <el-button @click="onImportExampleClick(3, 5)">3阶-5点</el-button>
       <el-button @click="onImportExampleClick(3, 7)">3阶-7点</el-button>
-      <div class="mt-10" />
-      <el-button type="primary" @click="exportBSpline">导出</el-button>
+
+      <div class="mt-10">
+        <el-input
+          v-model="importTextInput"
+          type="textarea"
+          :rows="3"
+          placeholder="粘贴B样条数据进行导入"
+        />
+      </div>
+
+      <div class="mt-10">
+        <el-button type="primary" @click="importBSplineFromText" style="margin-right: 10px"
+          >导入</el-button
+        >
+        <el-button type="primary" @click="exportBSpline">导出</el-button>
+      </div>
     </div>
     <div class="widget-box" style="border-color: coral">
       <h3 style="font-weight: bold">插节点</h3>

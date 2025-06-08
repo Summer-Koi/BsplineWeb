@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Canvas from './components/Canvas.vue'
-import Knots from './components/Knots.vue'
 import Widgets from './components/Widgets.vue'
 import { onMounted, ref } from 'vue'
 import { ControlPoint } from './components/ts/defines'
@@ -45,7 +44,7 @@ const handleManualKnotsInput = (knotValues: number[] | null) => {
       v-model:new-curve-degree="newCurveDegree"
       v-model:use-manual-knots="useManualKnots"
       v-model:manual-knots="manualKnots"
-    />
+      />
   </div>
   <Widgets
     ref="widgetsRef"
