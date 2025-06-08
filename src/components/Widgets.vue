@@ -239,7 +239,7 @@ const importBSplineFromText = () => {
       <h3 style="font-weight: bold">创建新B样条</h3>
       <div>
         <span>设置阶数: </span>
-        <el-input-number v-model="newCurveDegree" :min="1" :max="5" :disabled="createMode" />
+        <el-input-number v-model="newCurveDegree" :min="2" :disabled="createMode" />
       </div>
 
       <!-- 添加节点向量输入区域 -->
